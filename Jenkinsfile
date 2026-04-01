@@ -6,7 +6,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-u root:root'   // run as root to avoid permission issues
+                    args '-u root:root'
                     reuseNode true
                 }
             }
@@ -25,11 +25,16 @@ pipeline {
                     node -v
                     npm -v
 
-                    echo "Clean old files"
-                    rm -rf node_modules package-lock.json || true
+                    echo "Fix npm cache"
+                    export npm_config_cache=/tmp/.npm
+                    mkdir -p /tmp/.npm
+                    chmod -R 777 /tmp/.npm
 
-                    echo "Install dependencies"
-                    npm install
+                    echo "Clean old files"
+                    rm -rf node_modules
+
+                    echo "Install dependencies (CI mode)"
+                    npm ci
 
                     echo "Build project"
                     npm run build
