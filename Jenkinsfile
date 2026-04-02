@@ -1,12 +1,29 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
+
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/priyankaD9/learn-jenkins-app.git'
+            }
+        }
+
         stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '--user 110:111'   // match Jenkins user
+                    args '--user 110:111'
                     reuseNode true
                 }
             }
@@ -17,11 +34,11 @@ pipeline {
                     node -v
                     npm -v
 
-                    echo "Clean workspace"
-                    rm -rf node_modules
+                    echo "Create local npm cache"
+                    mkdir -p .npm
 
                     echo "Install dependencies"
-                    npm ci --cache /tmp/.npm
+                    npm ci --cache .npm
 
                     echo "Build project"
                     npm run build
