@@ -6,35 +6,22 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-u root:root'
+                    args '--user 110:111'   // match Jenkins user
                     reuseNode true
                 }
             }
 
-            environment {
-                NPM_CONFIG_CACHE = '/tmp/.npm'
-            }
-
             steps {
                 sh '''
-                    echo "Debugging workspace"
-                    pwd
-                    ls -la
-
                     echo "Node & NPM version"
                     node -v
                     npm -v
 
-                    echo "Fix npm cache"
-                    export npm_config_cache=/tmp/.npm
-                    mkdir -p /tmp/.npm
-                    chmod -R 777 /tmp/.npm
-
-                    echo "Clean old files"
+                    echo "Clean workspace"
                     rm -rf node_modules
 
-                    echo "Install dependencies (CI mode)"
-                    npm ci
+                    echo "Install dependencies"
+                    npm ci --cache /tmp/.npm
 
                     echo "Build project"
                     npm run build
