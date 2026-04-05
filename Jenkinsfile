@@ -1,29 +1,52 @@
-stage('Build') {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '-u 110:111'
-            reuseNode true
-        }
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
     }
 
-    steps {
-        sh '''
-            echo "Node & NPM version"
-            node -v
-            npm -v
+    stages {
 
-            echo "Clean old files"
-            rm -rf node_modules package-lock.json
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
 
-            echo "Create safe npm cache"
-            mkdir -p /tmp/.npm
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/priyankaD9/learn-jenkins-app.git'
+            }
+        }
 
-            echo "Install dependencies"
-            npm ci --cache /tmp/.npm
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    args '-u 110:111'
+                    reuseNode true
+                }
+            }
 
-            echo "Build project"
-            npm run build
-        '''
+            steps {
+                sh '''
+                    echo "Node & NPM version"
+                    node -v
+                    npm -v
+
+                    echo "Clean old files"
+                    rm -rf node_modules package-lock.json
+
+                    echo "Create safe npm cache"
+                    mkdir -p /tmp/.npm
+
+                    echo "Install dependencies"
+                    npm ci --cache /tmp/.npm
+
+                    echo "Build project"
+                    npm run build
+                '''
+            }
+        }
     }
 }
