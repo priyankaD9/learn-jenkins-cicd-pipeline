@@ -7,21 +7,20 @@ stage('Build') {
         }
     }
 
-    environment {
-        NPM_CONFIG_CACHE = '/tmp/.npm'
-    }
-
     steps {
         sh '''
             echo "Node & NPM version"
             node -v
             npm -v
 
-            echo "Create npm cache inside container"
+            echo "Clean old files"
+            rm -rf node_modules package-lock.json
+
+            echo "Create safe npm cache"
             mkdir -p /tmp/.npm
 
             echo "Install dependencies"
-            npm ci
+            npm ci --cache /tmp/.npm
 
             echo "Build project"
             npm run build
